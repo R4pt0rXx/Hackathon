@@ -1,28 +1,25 @@
 import numpy as np
+import scipy as sc
 
-data = [3, 16, 156, 47, 246, 176, 233, 140, 130, 
+data = [4, 16, 156, 47, 246, 176, 233, 140, 130, 
         101, 166, 201, 200, 116, 118, 247, 
         209, 52, 153, 232, 128, 27, 192, 168, 208, 
         187, 228, 86, 30, 151, 18, 254, 
         76, 112, 67, 244, 179, 150, 89, 49, 83, 147, 90, 
         33, 6, 158, 80, 35, 186, 127]
 
-data2 = [3, 16, 156, 47, 246, 176, 233, 140, 130, 
+data2 = [
         101, 166, 201, 200, 116, 118, 247, 
         209, 52, 153, 232, 128, 27, 192, 168, 208, 
         187, 228, 86, 30, 151, 18, 254, 
         76, 112, 67, 244, 179, 150, 89, 49, 83, 147, 90, 
-        33, 6, 158, 80, 35, 186, 127]
-lags = range(10)
+        33, 6, 158, 80, 35, 186, 127, 100, 16, 156, 47, 246, 176, 233, 140, 130]
 
 x = np.array(data)
+y = np.array(data2)
 
-mean = np.mean(x)
-var = np.var(x)
+ndata = x - np.mean(x)
+mdata = y - np.mean(y)
 
-ndata = x - mean
-
-acorr = np.correlate(ndata, ndata, "full")[len(ndata)-1:]
-acorr = acorr / var / len(ndata)
-
-print(acorr)
+acorr = sc.signal.correlate(ndata, mdata, "full", "fft")[len(ndata)-1:]
+print(acorr.argmax())

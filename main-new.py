@@ -2,6 +2,7 @@ import sounddevice as sd
 import math
 import numpy as np
 from scipy.signal import find_peaks
+from scipy import signal
 import os
 import time
 samplerate = 44000
@@ -44,7 +45,11 @@ def processBuffer():
         cnt += 1
 
 
-    
+    data0 = diff[0] - np.mean(diff[0])
+    data1 = diff[1] - np.mean(diff[1])
+
+    corr = signal.correlate(data0, data1, "full", "fft")[len(data0)-1:].argmax()
+    print(corr)
 
     #peaks0 = find_peaks(diff[0], distance=blocksize/stepsize)
     #peaks1 = find_peaks(diff[1], distance=blocksize/stepsize)
@@ -59,9 +64,9 @@ def processBuffer():
     peakDiffX = peaks0 - peaks1
     peakDiffX += secondsPerStep
 
-    for d in diff[0]:
-        out = "#" * int(d*5000)
-        print(out)
+    # for d in diff[0]:
+    #     out = "#" * int(d*5000)
+    #     print(out)
 
 
 def callback(indata, outdata, frames, time, status):
