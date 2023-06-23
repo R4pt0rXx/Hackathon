@@ -4,7 +4,7 @@ import numpy as np
 from scipy.signal import find_peaks
 import os
 import time
-samplerate = 48000
+samplerate = 96000
 seconds = 10
 downsample = 1
 input_gain_db = 12
@@ -12,7 +12,7 @@ device = 'snd_rpi_i2s_card'
 
 duration = 5  # seconds
 blocksize = 1000
-stepsize = 20
+stepsize = 10
 
 curVol = 0
 lastVol = 0
@@ -45,10 +45,10 @@ def processBuffer():
     
 
     peaks0 = find_peaks(diff[0], distance=10)
-    peaks1 = find_peaks(diff[1], height = 0)
-    print(peaks0)
-    for p in peaks0:
-        print(diff[0][p[0]])
+    peaks1 = find_peaks(diff[1], distance=10)
+
+    print("1:"+str(peaks0[0]))
+    print("2:"+str(peaks1[0]))
 
 
 def callback(indata, outdata, frames, time, status):
