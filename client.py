@@ -1,4 +1,4 @@
-import socket, signal, struct
+import socket, signal, struct, tkinter as tk
 
 BUFFER_SIZE=1024
 
@@ -9,6 +9,13 @@ def signal_handler():
     run = False
 
 signal.signal(signal.SIGINT, signal_handler)
+
+window = tk.Tk()
+
+canvas = tk.Canvas(window)
+canvas.pack()
+
+window.mainloop()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((input("IP: "), 6969))
