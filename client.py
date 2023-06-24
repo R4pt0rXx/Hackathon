@@ -12,16 +12,22 @@ def signal_handler(x,y):
     run = False
     sys.exit(0)
 
+def reset(canvas: tk.Canvas, id):
+    canvas.moveto(id, WIDTH/2-A/2, HEIGHT/2-A/2)
+
 signal.signal(signal.SIGINT, signal_handler)
 
-ip = input("IP: ")
+ip = "192.168.2.4" #input("IP: ")
 
 window = tk.Tk()
-window.geometry("1000x500")
+window.geometry("%dx%d" % (WIDTH,HEIGHT+50))
 
-canvas = tk.Canvas(window, width=1000, height=500)
+canvas = tk.Canvas(window, width=WIDTH, height=HEIGHT)
 canvas.pack()
 id = canvas.create_rectangle(WIDTH/2-A/2,HEIGHT/2-A/2,WIDTH/2+A/2,HEIGHT/2+A/2)
+
+button = tk.Button(window, text="Reset", command=lambda: reset(canvas, id))
+button.pack()
 
 def do_smth(canvas, id, ip):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

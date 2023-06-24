@@ -67,8 +67,8 @@ def processBuffer():
 
     #     cnt += 1
 
-    f0, _ = find_peaks([abs(i[0]) for i in buffer], height=0.006, distance=20)
-    f1, _ = find_peaks([abs(i[1]) for i in buffer], height=0.006, distance=20)
+    f0, _ = find_peaks([i[0] for i in buffer], height=0.006, distance=20)
+    f1, _ = find_peaks([i[1] for i in buffer], height=0.006, distance=20)
 
     if len(f0) == 0 or len(f1) == 0:
         return
