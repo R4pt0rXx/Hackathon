@@ -1,6 +1,9 @@
-import socket, signal, struct, tkinter as tk
+import socket, signal, struct, tkinter as tk, threading
 
 BUFFER_SIZE=1024
+WIDTH=1000
+HEIGHT=500
+A=100
 
 run = True
 
@@ -8,24 +11,25 @@ def signal_handler():
     global run
     run = False
 
-
-
 signal.signal(signal.SIGINT, signal_handler)
 
+ip = input("IP: ")
+
 window = tk.Tk()
+window.geometry("1000x500")
 
-canvas = tk.Canvas(window)
+canvas = tk.Canvas(window, width=1000, height=500)
 canvas.pack()
-canvas.create_rectangle(10,10,20,20)
+id = canvas.create_rectangle(WIDTH/2-A/2,HEIGHT/2-A/2,WIDTH/2+A/2,HEIGHT/2+A/2)
 
-def do_smth():
+def do_smth(canvas, id, ip):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((input("IP: "), 6969))
+    s.connect((ip, 6969))
     while run:
         data = b''
         while len(data) < 4:
             data += s.recv(BUFFER_SIZE)
-        print(struct.unpack("!i",data[:4])[0])
+        canvas.move(id, struct.unpack("!i",data[:4])[0]*10,0)
 
-window.after(1000,do_smth)
+threading.Thread(target=do_smth, args=(canvas, id, ip,)).start()
 window.mainloop()

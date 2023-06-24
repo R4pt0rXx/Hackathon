@@ -12,7 +12,7 @@ input_gain_db = 12
 device = 'snd_rpi_i2s_card'
 
 duration = 5  # seconds
-blocksize = 750
+blocksize = 1000
 stepsize = 10
 
 secondsPerStep = 1/samplerate * (blocksize/stepsize)
@@ -20,7 +20,7 @@ secondsPerStep = 1/samplerate * (blocksize/stepsize)
 curVol = 0
 lastVol = 0
 
-buffer  = np.zeros(shape=(blocksize*2,2))
+buffer  = np.zeros(shape=(blocksize,2))
 last_time = None
 last = ""
 change = False
@@ -29,7 +29,10 @@ q = queue.Queue()
 def server(conn: socket.socket):
     while 1:
         val = struct.pack("!i", q.get())
-        conn.send(val)
+        try:
+            conn.send(val)
+        except:
+            break
     conn.close()
 
 def processBuffer():
@@ -64,8 +67,8 @@ def processBuffer():
 
     #     cnt += 1
 
-    f0, _ = find_peaks([abs(i[0]) for i in buffer], height=0.0065, distance=20)
-    f1, _ = find_peaks([abs(i[1]) for i in buffer], height=0.0065, distance=20)
+    f0, _ = find_peaks([abs(i[0]) for i in buffer], height=0.006, distance=20)
+    f1, _ = find_peaks([abs(i[1]) for i in buffer], height=0.006, distance=20)
 
     if len(f0) == 0 or len(f1) == 0:
         return
@@ -108,8 +111,8 @@ def callback(indata, frames, time, status):
     global change
     if status:
         print(status)
-    buffer = np.roll(buffer,-blocksize,axis=0)
-    buffer[blocksize:] = indata
+    #buffer = np.roll(buffer,-blocksize,axis=0)
+    buffer[:] = indata
     #q.put(indata[:])
     #print(indata)
     #print(buffer)
