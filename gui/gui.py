@@ -3,7 +3,7 @@ import tkinter as tk
 window = tk.TK()
 test = tk.Label(text= "Placeholder Name")
 test.pack()
-window.mainloop()
+
 
 datalabel = tk.label(text = "Data:")
 
@@ -28,3 +28,4 @@ generatebtn = tk.Button(
 )
 
 output = tk.label(text = input())
+window.mainloop()
