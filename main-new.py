@@ -1,7 +1,7 @@
 import sounddevice as sd
 import numpy as np
 import queue, threading
-import socket
+import socket, struct
 from scipy.signal import find_peaks
 from scipy import signal
 
@@ -28,7 +28,8 @@ q = queue.Queue()
 
 def server(conn: socket.socket):
     while 1:
-        conn.send(q.get().encode())
+        val = struct.pack("!i", q.get())
+        conn.send(val)
     conn.close()
 
 def processBuffer():
@@ -80,10 +81,7 @@ def processBuffer():
     corr = signal.correlate(data0, data1, "full", "fft").argmax()#-(len(data0)-1)
     lags = signal.correlation_lags(data0.size, data1.size, "full")
     lag = lags[corr]
-    if lag < 0:
-        q.put("r")
-    elif lag > 0:
-        q.put("l")
+    q.put(lag//abs(lag))
 
     #peaks0 = find_peaks(diff[0], distance=blocksize/stepsize)
     #peaks1 = find_peaks(diff[1], distance=blocksize/stepsize)
