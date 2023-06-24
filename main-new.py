@@ -85,7 +85,7 @@ def processBuffer():
     lags = signal.correlation_lags(data0.size, data1.size, "full")
     lag = lags[corr]
     if lag != 0:
-        q.put(lag//abs(lag))
+        q.put(lag)
 
     #peaks0 = find_peaks(diff[0], distance=blocksize/stepsize)
     #peaks1 = find_peaks(diff[1], distance=blocksize/stepsize)
