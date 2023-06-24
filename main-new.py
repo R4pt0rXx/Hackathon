@@ -12,7 +12,7 @@ input_gain_db = 12
 device = 'snd_rpi_i2s_card'
 
 duration = 5  # seconds
-blocksize = 1000
+blocksize = 1500
 stepsize = 10
 
 secondsPerStep = 1/samplerate * (blocksize/stepsize)
@@ -20,7 +20,7 @@ secondsPerStep = 1/samplerate * (blocksize/stepsize)
 curVol = 0
 lastVol = 0
 
-buffer  = np.zeros(shape=(blocksize,2))
+buffer  = np.zeros(shape=(blocksize + blocksize//10,2))
 last_time = None
 last = ""
 change = False
@@ -112,8 +112,8 @@ def callback(indata, frames, time, status):
     global change
     if status:
         print(status)
-    #buffer = np.roll(buffer,-blocksize,axis=0)
-    buffer[:] = indata
+    buffer = np.roll(buffer,-blocksize//10,axis=0)
+    buffer[blocksize//10:] = indata
     #q.put(indata[:])
     #print(indata)
     #print(buffer)

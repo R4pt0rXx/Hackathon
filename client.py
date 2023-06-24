@@ -36,7 +36,9 @@ def do_smth(canvas, id, ip):
         data = b''
         while len(data) < 4:
             data += s.recv(BUFFER_SIZE)
-        canvas.move(id, struct.unpack("!i",data[:4])[0]*10,0)
+        num = struct.unpack("!i",data[:4])[0]
+        print(num)
+        canvas.move(id, num*10,0)
 
 threading.Thread(target=do_smth, args=(canvas, id, ip,)).start()
 window.mainloop()
