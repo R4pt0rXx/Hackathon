@@ -41,8 +41,8 @@ def processBuffer():
     if len(f0) == 0 :
         return
 
-    d0 = np.array([buffer[i][0] * buffer[i][0]  for i in range(len(buffer))])
-    d1 = np.array([buffer[i][1] * buffer[i][1]  for i in range(len(buffer))])
+    d0 = np.array([buffer[i][0] * buffer[i][0] for i in range(len(buffer))])
+    d1 = np.array([buffer[i][1] * buffer[i][1] for i in range(len(buffer))])
 
     data0 = d0 - np.mean(d0)
     data1 = d1 - np.mean(d1)
