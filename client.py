@@ -1,4 +1,4 @@
-import socket, signal, struct, tkinter as tk, threading
+import socket, signal, struct, tkinter as tk, threading, sys
 
 BUFFER_SIZE=1024
 WIDTH=1000
@@ -7,9 +7,10 @@ A=100
 
 run = True
 
-def signal_handler():
+def signal_handler(x,y):
     global run
     run = False
+    sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
