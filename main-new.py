@@ -1,33 +1,37 @@
 import sounddevice as sd
 import numpy as np
+import queue, threading
+import socket
 from scipy.signal import find_peaks
 from scipy import signal
 
-samplerate = 44100
+samplerate = 44000
 seconds = 10
 downsample = 1
 input_gain_db = 12
 device = 'snd_rpi_i2s_card'
 
 duration = 5  # seconds
-blocksize = 1000
-stepsize = 50
+blocksize = 750
+stepsize = 10
 
 secondsPerStep = 1/samplerate * (blocksize/stepsize)
 
 curVol = 0
 lastVol = 0
 
-buffer  = np.zeros(shape=(blocksize,4))
+buffer  = np.zeros(shape=(blocksize*2,2))
 last_time = None
 last = ""
 change = False
-#q = queue.Queue()
+q = queue.Queue()
 
+def server(conn: socket.socket):
+    while 1:
+        conn.send(q.get())
+    conn.close()
 
 def processBuffer():
-    global last
-    global last_time
     global buffer
     #global diff
     #global amps
@@ -39,29 +43,28 @@ def processBuffer():
     #     shift = len(data)
     #     buffer = np.roll(buffer, -shift)
     #     buffer[-shift:] = data
+    #print("start process")
+    # cnt = 0
+    # amps    = np.zeros(shape=(2,int(blocksize/stepsize)))
+    # diff    = np.zeros(shape=(2,int(blocksize/stepsize)))
+    # #print("process:", last_time.currentTime if last_time != None else "")
 
-    cnt = 0
-    amps    = np.zeros(shape=(2,int(blocksize/stepsize)))
-    diff    = np.zeros(shape=(2,int(blocksize/stepsize)))
-    #print("process:", last_time.currentTime if last_time != None else "")
+    # while(cnt * stepsize < len(buffer)):
 
-    while(cnt * stepsize < len(buffer)):
+    #     left    = max(buffer[cnt*stepsize:(cnt +1 ) *stepsize][0].min(), buffer[cnt*stepsize:(cnt +1 ) *stepsize][0].max(), key=abs)
+    #     right   = max(buffer[cnt*stepsize:(cnt +1 ) *stepsize][1].min(), buffer[cnt*stepsize:(cnt +1 ) *stepsize][1].max(), key=abs)
 
-        left    = max(buffer[cnt*stepsize:(cnt +1 ) *stepsize][0].min(), buffer[cnt*stepsize:(cnt +1 ) *stepsize][0].max(), key=abs)
-        right   = max(buffer[cnt*stepsize:(cnt +1 ) *stepsize][1].min(), buffer[cnt*stepsize:(cnt +1 ) *stepsize][1].max(), key=abs)
+    #     diff[0][cnt] = left  - amps[0][cnt]
+    #     diff[1][cnt] = right - amps[1][cnt]
 
-        diff[0][cnt] = left  - amps[0][cnt]
-        diff[1][cnt] = right - amps[1][cnt]
+    #     smooth = 0.6
+    #     amps[0][cnt] = amps[0][cnt] * smooth +   left * (1-smooth)
+    #     amps[1][cnt] = amps[1][cnt] * smooth +   right * (1-smooth)
 
-        smooth = 0.6
-        amps[0][cnt] = amps[0][cnt] * smooth +   left * (1-smooth)
-        amps[1][cnt] = amps[1][cnt] * smooth +   right * (1-smooth)
+    #     cnt += 1
 
-       
-        cnt += 1
-
-    f0, _ = find_peaks([abs(i[0]) for i in buffer], height=0.2, distance=10)
-    f1, _ = find_peaks([abs(i[1]) for i in buffer], height=0.2, distance=10)
+    f0, _ = find_peaks([abs(i[0]) for i in buffer], height=0.0065, distance=20)
+    f1, _ = find_peaks([abs(i[1]) for i in buffer], height=0.0065, distance=20)
 
     if len(f0) == 0 or len(f1) == 0:
         return
@@ -78,26 +81,27 @@ def processBuffer():
     lags = signal.correlation_lags(data0.size, data1.size, "full")
     lag = lags[corr]
     if lag < 0:
-        print("r", lag)
+        q.put("r")
     elif lag > 0:
-        print("l", lag)
+        q.put("l")
 
     #peaks0 = find_peaks(diff[0], distance=blocksize/stepsize)
     #peaks1 = find_peaks(diff[1], distance=blocksize/stepsize)
-    peaks0 = np.argmax(diff[0])
-    peaks1 = np.argmax(diff[1])
+    #peaks0 = np.argmax(diff[0])
+    #peaks1 = np.argmax(diff[1])
 
     #print("1" + str(peaks0[0]))
     #print("2" + str(peaks1[0]))
 
-    threshold = 1
+    #threshold = 1
 
-    peakDiffX = peaks0 - peaks1
-    peakDiffX += secondsPerStep
+    #peakDiffX = peaks0 - peaks1
+    #peakDiffX += secondsPerStep
+    #print("end process")
 
-    #for d in diff[0]:
-    #    out = "#" * int(d*1000)
-    #    print(out)
+    # for d in diff[0]:
+    #     out = "#" * int(d*1000)
+    #     print(out)
 
 
 def callback(indata, frames, time, status):
@@ -106,16 +110,26 @@ def callback(indata, frames, time, status):
     global change
     if status:
         print(status)
-    buffer = indata
+    buffer = np.roll(buffer,-blocksize,axis=0)
+    buffer[blocksize:] = indata
     #q.put(indata[:])
     #print(indata)
     #print(buffer)
     #print("callback:", time.currentTime)
-    last_time = time
+    #last_time = time
+    #print("Here")
     change = True
 
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(("0.0.0.0", 6969))
+s.listen(1)
+print("Waiting for incoming connection...")
+conn, addr = s.accept()
+print("Got connection. Starting server thread")
 
-with sd.InputStream(channels=4, callback=callback, samplerate=samplerate, blocksize=blocksize,latency="low"):
+t = threading.Thread(target=server, args=(conn,))
+t.start()
+with sd.InputStream(channels=2, callback=callback, samplerate=samplerate, blocksize=blocksize,latency="low"):
     #sde.start
     print("Start")
     while(1):
@@ -125,4 +139,4 @@ with sd.InputStream(channels=4, callback=callback, samplerate=samplerate, blocks
 
 
     #sde.stop()
-#test
+t.join()
