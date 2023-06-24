@@ -19,7 +19,7 @@ parse.add_argument("-s", action="store_true")
 args = parse.parse_args()
 
 def get_WiNkEl(diff):
-    return np.rad2deg(np.arcsin((diff * secondsPerStep  * 334.2 )/ 0.044))
+    return np.rad2deg(np.arcsin((diff * secondsPerStep  * 343.2 )/ 0.044))
 
 def server(conn: socket.socket):
     while 1:
@@ -50,10 +50,11 @@ def processBuffer():
     corr = signal.correlate(data0, data1, "full", "fft").argmax()#-(len(data0)-1)
     lags = signal.correlation_lags(data0.size, data1.size, "full")
     lag = lags[corr]
+    if abs(lag) > 7:
+        return
     winkel =(get_WiNkEl(lag))
     print(winkel)
-
-    if args.s and winkel != np.nan:    
+    if args.s and not np.isnan(winkel):    
         q.put(int(winkel*1000))
 
 
