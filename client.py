@@ -8,6 +8,15 @@ def signal_handler():
     global run
     run = False
 
+def do_smth():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((input("IP: "), 6969))
+    while run:
+        data = b''
+        while len(data) < 4:
+            data += s.recv(BUFFER_SIZE)
+        print(struct.unpack("!i",data[:4])[0])
+
 signal.signal(signal.SIGINT, signal_handler)
 
 window = tk.Tk()
@@ -15,12 +24,5 @@ window = tk.Tk()
 canvas = tk.Canvas(window)
 canvas.pack()
 
+window.after(0,do_smth)
 window.mainloop()
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((input("IP: "), 6969))
-while run:
-    data = b''
-    while len(data) < 4:
-        data += s.recv(BUFFER_SIZE)
-    print(struct.unpack("!i",data[:4])[0])
