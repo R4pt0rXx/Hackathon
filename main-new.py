@@ -28,7 +28,7 @@ q = queue.Queue()
 
 def server(conn: socket.socket):
     while 1:
-        conn.send(q.get())
+        conn.send(q.get().encode())
     conn.close()
 
 def processBuffer():
